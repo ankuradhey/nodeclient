@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<file><index>1</index>
+	<fileSize>5mb</fileSize>
+	<fileType>zip</fileType>
+	<filename>zippedpatch_5mb_1.zip</filename>
+	<downloadStatus>0</downloadStatus>
+	<downloadInfo>
+		<startTime>NULL</startTime>
+		<endTime>NULL</endTime>
+		<status>0</status>
+	</downloadInfo>
+</file>
+<file>
+	<index>2</index>
+	<fileSize>500mb</fileSize>
+	<fileType>zip</fileType>
+	<filename>zippedpatch_500mb_1.zip</filename>
+	<downloadStatus>0</downloadStatus>
+	<downloadInfo>
+		<startTime>NULL</startTime>
+		<endTime>NULL</endTime>
+		<status>0</status>
+	</downloadInfo>
+</file>
+<file>
+	<index>3</index>
+	<fileSize>2000mb</fileSize>
+	<fileType>zip</fileType>
+	<filename>zippedpatch_2000mb_1.zip</filename>
+	<downloadStatus>0</downloadStatus>
+	<downloadInfo>
+		<startTime>NULL</startTime>
+		<endTime>NULL</endTime>
+		<status>0</status>
+	</downloadInfo>
+</file>
