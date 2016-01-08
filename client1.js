@@ -10,7 +10,7 @@ socket = io.connect('http://10.1.17.94:8000');
 
 function handleDisconnect() {
     cloudConnection = mysql.createConnection({
-        host: 'localhost',
+        host: '10.1.17.94',
         user: 'root',
         password: '',
         database: 'patch',
