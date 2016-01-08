@@ -27,10 +27,12 @@ function handleDisconnect() {
 
 }
 
-//If there is an error connecting to the server database
-handleDisconnect();
+
 
 socket.on('connect', function (data) {
+    //If there is an error connecting to the server database
+    handleDisconnect();
+    
     cloudConnection.query('select * from slc_patch where slc_id = 1', function (err, rows, fields) {
         if (err) {
             console.log(" mysql socket connect unexpectedly closed ");
@@ -57,7 +59,9 @@ socket.on('connect', function (data) {
                     console.log("All files downloaded successfully");
                 });
             }
-
+            cloudConnection.end(function(err) {
+                // The connection is terminated now
+            });
         }
     });
 });
@@ -89,6 +93,7 @@ socket.on('timeout', function (data) {
 function setDownloadFlag(slcId, callback) {
     console.log('slc id - ', +slcId);
     if (!isNaN(parseInt(slcId))) {
+        handleDisconnect();
         // Make the database query
         var query = cloudConnection.query('update slc_patch set download_flag = "1" where slc_id = "' + slcId + '" ', function (err, rows) {
             if (err) {
@@ -104,6 +109,9 @@ function setDownloadFlag(slcId, callback) {
             console.log(rows.changedRows);
 
             callback();
+            cloudConnection.end(function(err) {
+                // The connection is terminated now
+            });
         });
     } else {
         console.log("Slc id not found");
@@ -122,6 +130,7 @@ cloudConnection.on('error', function(err) {
 function unsetDownloadFlag(slcId, callback) {
     console.log('slc id - ', +slcId);
     if (!isNaN(parseInt(slcId))) {
+        handleDisconnect();
         // Make the database query
         var query = cloudConnection.query('update slc_patch set download_flag = "0" where slc_id = "' + slcId + '" ', function (err, rows) {
             if (err) {
@@ -137,6 +146,9 @@ function unsetDownloadFlag(slcId, callback) {
             console.log(rows.changedRows);
 
             callback();
+            cloudConnection.end(function(err) {
+                // The connection is terminated now
+            });
         });
     } else {
         console.log("Slc id not found");
@@ -146,6 +158,7 @@ function unsetDownloadFlag(slcId, callback) {
 
 
 function downloadFile(slcId, callback) {
+    handleDisconnect();
     cloudConnection.query('select * from filelist where download_status < "2" and slc_id = "' + slcId + '" ', function (err, rows, fields) {
         console.log('checking files to be downloaded');
         if (err) {
@@ -163,19 +176,24 @@ function downloadFile(slcId, callback) {
         if (rows) {
             for (var i in rows) {
                 FtpDownload(rows[i].filename, slcId, function (filename, Ftp) {
-                    cloudConnection.query('update filelist set download_status = "2" where filename = "' + filename + '" and slc_id = "' + slcId + '" ')
-                    Ftp.raw.quit(function (err, data) {
-                        if (err)
+                    handleDisconnect();
+                    cloudConnection.query('update filelist set download_status = "2" where filename = "' + filename + '" and slc_id = "' + slcId + '" ', function(err, rows, fields){
+                        if(err)
                             throw err;
-
-                        console.log('ftp closed! Bye!!');
+                        
+                        cloudConnection.end(function(err) {
+                            // The connection is terminated now
+                        });
                     });
+                    
                 });
             }
             if (i == rows.length)
                 callback();
         }
-
+        cloudConnection.end(function(err) {
+            // The connection is terminated now
+        });
     })
 }
 
@@ -186,9 +204,10 @@ function FtpDownload(filename, slcId, callback) {
         password: 'extra123',
     });
 
-    Ftp.keepAlive(1000000);
+//    Ftp.keepAlive(1000000);
 
     Ftp.auth('extramarks', 'extra123', function (err, res) {
+        handleDisconnect();
         cloudConnection.query('update filelist set download_status = "1" where filename = "' + filename + '" and slc_id = "' + slcId + '" ', function (err, results) {
 
             if (err) {
@@ -204,9 +223,18 @@ function FtpDownload(filename, slcId, callback) {
                 else
                     console.log(" file copied!! " + filename + " hurray!! ");
                 callback(filename, Ftp);
+                
+                Ftp.raw.quit(function (err, data) {
+                        if (err)
+                            throw err;
+
+                        console.log('ftp closed! Bye!!');
+                });
             });
 
-
+            cloudConnection.end(function(err) {
+                // The connection is terminated now
+            });
 
         });
     });
