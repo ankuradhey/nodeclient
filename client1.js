@@ -97,6 +97,10 @@ socket.on('new-version-available', function (data) {
 socket.on('timeout', function (data) {
     console.log('ankit - socket timeout error');
 });
+
+socket.on('error',function(data){
+   console.log('socket connection unexpectedly closed',data) 
+});
 //downloadFile();
 
 function setDownloadFlag(slcId, callback) {
@@ -215,7 +219,9 @@ function FtpDownload(filename, slcId, callback) {
                 console.log(" mysql socket connect unexpectedly closed ");
                 throw err;
             }
-
+            
+            console.log("ftp starts");
+            
             Ftp.get('/nodejs/git/' + filename, filename, function (hadErr) {
                 if (hadErr) {
                     console.log('FTP ERROR');
