@@ -25,6 +25,15 @@ function handleDisconnect() {
 
     });
 
+    cloudConnection.on('error', function (err) {
+        console.log('db error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+            handleDisconnect();                         // lost due to either server restart, or a
+        } else {                                      // connnection idle timeout (the wait_timeout
+            throw err;                                  // server variable configures this)
+        }
+    });
+
 }
 
 
@@ -32,7 +41,7 @@ function handleDisconnect() {
 socket.on('connect', function (data) {
     //If there is an error connecting to the server database
     handleDisconnect();
-    
+
     cloudConnection.query('select * from slc_patch where slc_id = 1', function (err, rows, fields) {
         if (err) {
             console.log(" mysql socket connect unexpectedly closed ");
@@ -59,7 +68,7 @@ socket.on('connect', function (data) {
                     console.log("All files downloaded successfully");
                 });
             }
-            cloudConnection.end(function(err) {
+            cloudConnection.end(function (err) {
                 // The connection is terminated now
             });
         }
@@ -109,7 +118,7 @@ function setDownloadFlag(slcId, callback) {
             console.log(rows.changedRows);
 
             callback();
-            cloudConnection.end(function(err) {
+            cloudConnection.end(function (err) {
                 // The connection is terminated now
             });
         });
@@ -118,14 +127,6 @@ function setDownloadFlag(slcId, callback) {
     }
 }
 
-cloudConnection.on('error', function(err) {
-    console.log('db error', err);
-    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-      handleDisconnect();                         // lost due to either server restart, or a
-    } else {                                      // connnection idle timeout (the wait_timeout
-      throw err;                                  // server variable configures this)
-    }
-  });
 
 function unsetDownloadFlag(slcId, callback) {
     console.log('slc id - ', +slcId);
@@ -146,7 +147,7 @@ function unsetDownloadFlag(slcId, callback) {
             console.log(rows.changedRows);
 
             callback();
-            cloudConnection.end(function(err) {
+            cloudConnection.end(function (err) {
                 // The connection is terminated now
             });
         });
@@ -177,21 +178,21 @@ function downloadFile(slcId, callback) {
             for (var i in rows) {
                 FtpDownload(rows[i].filename, slcId, function (filename, Ftp) {
                     handleDisconnect();
-                    cloudConnection.query('update filelist set download_status = "2" where filename = "' + filename + '" and slc_id = "' + slcId + '" ', function(err, rows, fields){
-                        if(err)
+                    cloudConnection.query('update filelist set download_status = "2" where filename = "' + filename + '" and slc_id = "' + slcId + '" ', function (err, rows, fields) {
+                        if (err)
                             throw err;
-                        
-                        cloudConnection.end(function(err) {
+
+                        cloudConnection.end(function (err) {
                             // The connection is terminated now
                         });
                     });
-                    
+
                 });
             }
             if (i == rows.length)
                 callback();
         }
-        cloudConnection.end(function(err) {
+        cloudConnection.end(function (err) {
             // The connection is terminated now
         });
     })
@@ -223,16 +224,16 @@ function FtpDownload(filename, slcId, callback) {
                 else
                     console.log(" file copied!! " + filename + " hurray!! ");
                 callback(filename, Ftp);
-                
-                Ftp.raw.quit(function (err, data) {
-                        if (err)
-                            throw err;
 
-                        console.log('ftp closed! Bye!!');
+                Ftp.raw.quit(function (err, data) {
+                    if (err)
+                        throw err;
+
+                    console.log('ftp closed! Bye!!');
                 });
             });
 
-            cloudConnection.end(function(err) {
+            cloudConnection.end(function (err) {
                 // The connection is terminated now
             });
 
