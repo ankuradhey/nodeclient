@@ -2,7 +2,7 @@ var io = require('socket.io-client'),
         fs = require('fs'),
         mysql = require('mysql'),
         connectionsArray = [],
-        JSFtp = require('jsftp');
+        JSFtp = require('jsftp'), i= 0;
 //server connection db
 
 
@@ -98,8 +98,8 @@ socket.on('timeout', function (data) {
     console.log('ankit - socket timeout error');
 });
 
-socket.on('error',function(data){
-   console.log('socket connection unexpectedly closed',data) 
+socket.on('error', function (data) {
+    console.log('socket connection unexpectedly closed', data)
 });
 //downloadFile();
 
@@ -179,28 +179,43 @@ function downloadFile(slcId, callback) {
         }
 
         if (rows) {
-            for (var i in rows) {
-                FtpDownload(rows[i].filename, slcId, function (filename, Ftp) {
-                    handleDisconnect();
-                    cloudConnection.query('update filelist set download_status = "2" where filename = "' + filename + '" and slc_id = "' + slcId + '" ', function (err, rows, fields) {
-                        if (err)
-                            throw err;
 
-                        cloudConnection.end(function (err) {
-                            // The connection is terminated now
-                        });
-                    });
 
-                });
-            }
-            if (i == rows.length)
-                callback();
+
+            FtpDownloadRecursively(rows, slcId, function(){
+                console.log("All files downloaded successfully")
+            });
         }
         cloudConnection.end(function (err) {
             // The connection is terminated now
         });
     })
 }
+
+function FtpDownloadRecursively(Rows, slcId, callback) {
+        console.log(Rows[i]);
+        if (Rows[i]) {
+            FtpDownload(Rows[i].filename, slcId, function (filename) {
+                handleDisconnect();
+                cloudConnection.query('update filelist set download_status = "2" where filename = "' + filename + '" and slc_id = "' + slcId + '" ', function (err, rows, fields) {
+                    if (err)
+                        throw err;
+
+                    cloudConnection.end(function (err) {
+                        // The connection is terminated now
+                    });
+                    
+                    delete Rows[i];
+                    i++;
+                    FtpDownloadRecursively(Rows, slcId, callback);
+                });
+
+            });
+        }else{
+            callback();
+        }
+}
+
 
 function FtpDownload(filename, slcId, callback) {
     var Ftp = new JSFtp({
@@ -219,9 +234,9 @@ function FtpDownload(filename, slcId, callback) {
                 console.log(" mysql socket connect unexpectedly closed ");
                 throw err;
             }
-            
+
             console.log("ftp starts");
-            
+
             Ftp.get('/nodejs/git/' + filename, filename, function (hadErr) {
                 if (hadErr) {
                     console.log('FTP ERROR');
