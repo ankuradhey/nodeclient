@@ -174,7 +174,7 @@ function downloadFile(slcId, callback) {
         if (!rows.length) {
             console.log("no file available for download");
             unsetDownloadFlag(slcId, function () {
-                console.log("All files were completely downloaded");
+                
             });
         }
 
@@ -183,7 +183,8 @@ function downloadFile(slcId, callback) {
 
 
             FtpDownloadRecursively(rows, slcId, function(){
-                console.log("All files downloaded successfully")
+                unsetDownloadFlag();
+                console.log("All files downloaded successfully");
             });
         }
         cloudConnection.end(function (err) {
