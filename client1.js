@@ -180,11 +180,21 @@ function downloadFile(slcId, callback) {
 
         if (rows) {
 
-
+ var Ftp = new JSFtp({
+        host: '10.1.17.94',
+        user: 'extramarks',
+        password: 'extra123',
+    });
 
             FtpDownloadRecursively(rows, slcId, function(){
                 unsetDownloadFlag();
                 console.log("All files downloaded successfully");
+		 Ftp.raw.quit(function (err, data) {
+                    if (err)
+                        throw err;
+
+                    console.log('ftp closed! Bye!!');
+                });
             });
         }
         cloudConnection.end(function (err) {
@@ -219,11 +229,7 @@ function FtpDownloadRecursively(Rows, slcId, callback) {
 
 
 function FtpDownload(filename, slcId, callback) {
-    var Ftp = new JSFtp({
-        host: '10.1.17.94',
-        user: 'extramarks',
-        password: 'extra123',
-    });
+   
 
 //    Ftp.keepAlive(1000000);
 
@@ -247,12 +253,7 @@ function FtpDownload(filename, slcId, callback) {
                     console.log(" file copied!! " + filename + " hurray!! ");
                 callback(filename, Ftp);
 
-                Ftp.raw.quit(function (err, data) {
-                    if (err)
-                        throw err;
-
-                    console.log('ftp closed! Bye!!');
-                });
+               
             });
 
             cloudConnection.end(function (err) {
