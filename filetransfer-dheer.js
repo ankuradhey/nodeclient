@@ -73,9 +73,6 @@ gatherFiles(_dir).then(function (files) {
         console.log('updates complete' + res)
     })
 
-
-
-
 }, function (err) {
     if (err)
         console.log(err);
